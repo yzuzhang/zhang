@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans-4.2.xsd        
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-4.2.xsd
+        http://www.springframework.org/schema/tx 
+     	http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+
+	<tx:annotation-driven />
+	<context:property-placeholder location="classpath:properties/db.properties" />
+
+	<!-- 主数据源（写库） -->
+	<bean id="masterDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialSize" value="${jdbc.initialSize}" />
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="stat,log4j" />
+		<property name="proxyFilters">
+			<list>
+				<ref bean="log-filter" />
+				<ref bean="stat-filter" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- 从数据源（读库） -->
+	<bean id="slaveDataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="url" value="${slave.jdbc.url}" />
+		<property name="username" value="${slave.jdbc.username}" />
+		<property name="password" value="${slave.jdbc.password}" />
+		<property name="initialSize" value="${slave.jdbc.initialSize}" />
+		<property name="maxActive" value="${slave.jdbc.maxActive}" />
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="stat,log4j" />
+		<property name="proxyFilters">
+			<list>
+				<ref bean="log-filter" />
+				<ref bean="stat-filter" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="dynamicDataSource" class="com.df.renren.routing.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="slave" value-ref="slaveDataSource" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="masterDataSource" />
+	</bean>
+
+	<!-- 切换数据源 -->
+	<bean id="dataSourceAdvice" class="com.df.renren.routing.datasource.DataSourceAdvice">
+		<property name="slaveMethods">
+			<list>
+				<value>query</value>
+				<value>list</value>
+				<value>load</value>
+				<value>find</value>
+				<value>get</value>
+				<value>select</value>
+				<value>count</value>
+				<value>exists</value>
+			</list>
+		</property>
+	</bean>
+
+	<aop:config proxy-target-class="false">
+		<aop:advisor pointcut="execution(* com.df.renren.service.*Service.*(..)) 
+			|| execution(* com.df.renren..dao.*Dao.*(..))" advice-ref="dataSourceAdvice" 
+			/>
+		
+	</aop:config>
+	
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="dynamicDataSource" />
+		</property>
+	</bean>
+
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="slowSqlMillis" value="1000" />
+		<property name="logSlowSql" value="true" />
+		<property name="mergeSql" value="true" />
+	</bean>
+	<bean id="log-filter" class="com.alibaba.druid.filter.logging.Log4jFilter">
+		<!-- <property name="resultSetLogEnabled" value="false" /> -->
+		<!-- <property name="statementExecutableSqlLogEnable" value="true" /> -->
+	</bean>
+
+
+	<!-- 集成 mybatis-plus MyBatis SqlSessionFactoryBean 配置 -->
+	<bean id="sqlSessionFactory"
+		class="com.baomidou.mybatisplus.spring.MybatisSqlSessionFactoryBean">
+		<property name="dataSource" ref="dynamicDataSource" />
+		<property name="configLocation" value="classpath:mybatis.xml" />
+		<property name="typeAliasesPackage" value="com.cdf.renren.entit" />
+		<property name="mapperLocations" value="classpath:com/df/renren/dao/*Dao.xml" />
+		<property name="plugins">
+			<array>
+				<!-- 分页插件配置 -->
+				<bean id="paginationInterceptor"
+					class="com.baomidou.mybatisplus.plugins.PaginationInterceptor">
+					<property name="dialectType" value="mysql" />
+					<!-- <property name="dialectType" value="oracle" /> -->
+				</bean>
+			</array>
+		</property>
+
+		<!-- Oracle需要添加该项 -->
+		<!-- <property name="dbType" value="oracle" /> -->
+
+		<!-- 全局表为下划线命名设置 true -->
+		<!-- <property name="dbColumnUnderline" value="true" /> -->
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.df.renren.dao" />
+
+	</bean>
+</beans>
