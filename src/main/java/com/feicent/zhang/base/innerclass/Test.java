@@ -24,7 +24,7 @@ public class Test {
 	public static void testOuter2(){
 		Outer2 outer = new Outer2();
 		Outer2.Inner inner = outer.new Inner();
-		//com.jd.ptest.common.InnerClass.Outer2.Inner inner1 = outer.new Inner();
+		//com.feicent.zhang.base.innerclass.Outer2.Inner inner1 = outer.new Inner();
 		inner.innerMethod();
     }
 }

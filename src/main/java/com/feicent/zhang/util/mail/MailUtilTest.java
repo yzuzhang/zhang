@@ -24,10 +24,10 @@ public class MailUtilTest {
     public void testSend1() throws Exception {
         TemplateMailMessage message = new TemplateMailMessage();
         message.setTo("80****692@qq.com");
-        message.setSubject("测试邮件工具类618");
+        message.setSubject("测试邮件工具类");
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("user", "测试用户");
-        model.put("text","这里是通过模版吐出的内容 !");
+        model.put("text","这里是通过邮件模版输出的的内容 !");
         message.setModel(model);
         message.setTemplatePath("template/demo.vm");
         MailUtil.send(message);
@@ -36,10 +36,10 @@ public class MailUtilTest {
     @Test
     public void testSend2() throws Exception {
         TemplateMailMessage message = new TemplateMailMessage();
-        message.setTo("804154692@qq.com");
+        message.setTo("80****692@qq.com");
         message.setSubject("测试邮件工具类");
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("user", "yzuzhang");
+        model.put("user", "zhang");
         model.put("text","这里是通过模版吐出的内容 !");
         message.setModel(model);
         message.setTemplatePath("template/demo.vm");

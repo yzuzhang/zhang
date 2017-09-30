@@ -33,7 +33,7 @@ public class XssFilter implements Filter {
     
     /*<filter>  
 	    <filter-name>XssEscape</filter-name>  
-	    <filter-class>com.jd.ptest.utils.web.xss.XssFilter</filter-class>  
+	    <filter-class>com.feicent.zhang.util.web.xss.XssFilter</filter-class>  
 	</filter>  
 	<filter-mapping>  
 	    <filter-name>XssEscape</filter-name>  
