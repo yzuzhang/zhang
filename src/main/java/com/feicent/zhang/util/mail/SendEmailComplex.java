@@ -91,14 +91,14 @@ public class SendEmailComplex {
         text.setContent("您好，****觉得您很符合本公司的招聘，特邀您于下周一到我司面试，如收到邮件请回复，谢谢！：<br/><img src='cid:timg'/>" , "text/html;charset=UTF-8");
 
         // 将 文本和 图片 "节点"合成一个混合"节点"
-        MimeMultipart text_image_Multipart = new MimeMultipart();
-        text_image_Multipart.addBodyPart(text);
-        text_image_Multipart.addBodyPart(image);
-        text_image_Multipart.setSubType("related"); // 关联关系
+        MimeMultipart textImageMultipart = new MimeMultipart();
+        textImageMultipart.addBodyPart(text);
+        textImageMultipart.addBodyPart(image);
+        textImageMultipart.setSubType("related"); // 关联关系
 
         // 将 文本+图片 的混合 "节点"封装成一个普通 "节点"
-        MimeBodyPart text_image_MimeBodyPart = new MimeBodyPart();
-        text_image_MimeBodyPart.setContent(text_image_Multipart);
+        MimeBodyPart textImageMimeBodyPart = new MimeBodyPart();
+        textImageMimeBodyPart.setContent(textImageMultipart);
 
         // 创建附件"节点"
         MimeBodyPart attachment = new MimeBodyPart();
@@ -112,7 +112,7 @@ public class SendEmailComplex {
 
         // 將(文本+图片)和 附件 的关系（合成一个大的混合"节点"）
         MimeMultipart mimeMultipart = new MimeMultipart();
-        mimeMultipart.addBodyPart(text_image_MimeBodyPart);
+        mimeMultipart.addBodyPart(textImageMimeBodyPart);
         // 如果有多个附件，可以创建多个多次添加
         mimeMultipart.addBodyPart(attachment);
         mimeMultipart.setSubType("mixed");

@@ -12,11 +12,15 @@ import com.feicent.zhang.util.StringUtils;
 
 /**
 * 通过手机号码,获得该号码的归属地、运营商等信息
+* @author yzuzhang
 */
 public class ShoujiHelper {
     
     public static final String SHOUJI_URL = "http://v.showji.com/Locating/showji.com2016234999234.aspx";
-    public static final String REGEX_IS_MOBILE ="(?is)(^1[3|4|5|7|8][0-9]\\d{4,8}$)";// 正则表达式,可以只输入手机号码前7位
+    /**
+     * 正则表达式,可以只输入手机号码前7位
+     */
+    public static final String REGEX_IS_MOBILE ="(?is)(^1[3|4|5|7|8][0-9]\\d{4,8}$)";
     
     /**
      * 根据手机号码获取归属地信息
@@ -28,8 +32,8 @@ public class ShoujiHelper {
             throw new Exception("不是完整的11位手机号或者正确的手机号前七位");
         }
         
-        String URL = SHOUJI_URL + "?m="+ mobileNumber +"&output=json&callback=querycallback&timestamp="+System.currentTimeMillis();
-        String result = HttpUtil.readContentFromURL(URL);
+        String url = SHOUJI_URL + "?m="+ mobileNumber +"&output=json&callback=querycallback&timestamp="+System.currentTimeMillis();
+        String result = HttpUtil.readContentFromURL(url);
         if( result != null ){
             result = StringUtils.substringBetween(result, "(", ")");
         }
@@ -47,7 +51,6 @@ public class ShoujiHelper {
         return m.matches(); 
     }
     
-    //测试一下
     public static void main(String[] args) throws Exception {
         
         long[] phones={

@@ -34,11 +34,15 @@ public class HttpClientPool {
 	private static int maxTotalPool = 200;
 	private static int maxPerRoute  = 200;
 
-	// 池化管理
+	/**
+	 * 池化管理
+	 */
     private static PoolingHttpClientConnectionManager poolConnManager = null;
-    //
+    
     private static CloseableHttpClient httpClient;
-    //请求器的配置
+    /**
+     * 请求器的配置
+     */
     private static RequestConfig requestConfig;
 
     static {
@@ -147,8 +151,10 @@ public class HttpClientPool {
             this.url = url;
         }
 
+        @Override
         public void run() {
-            for(int i = 0; i < 3; i++) {
+        	int count = 3;
+            for(int i = 0; i < count; i++) {
                 HttpGet httpGet = new HttpGet(url);
                 CloseableHttpResponse response = null;
                 try {

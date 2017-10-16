@@ -64,8 +64,9 @@ public class OkHttpUtils {
 	public static void doGet(String url) throws Exception {
 		Request request = new Request.Builder().url(url).build();
 		Response response = client.newCall(request).execute();
-		if (!response.isSuccessful())
+		if (!response.isSuccessful()) {
 			throw new IOException("Unexpected code " + response);
+		}
 		Headers responseHeaders = response.headers();
 		for (int i = 0; i < responseHeaders.size(); i++) {
 			System.out.println(responseHeaders.name(i) + ": "
@@ -90,7 +91,9 @@ public class OkHttpUtils {
 	      
 	      @Override
 	      public void onResponse(Call call, Response response) throws IOException {
-	        if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+	        if (!response.isSuccessful()) {
+	        	throw new IOException("Unexpected code " + response);
+	        }
 	        
 	        Headers responseHeaders = response.headers();
 	        for (int i = 0, size = responseHeaders.size(); i < size; i++) {
@@ -110,7 +113,9 @@ public class OkHttpUtils {
 	        .build();
 	    
 	    Response response = client.newCall(request).execute();
-	    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+	    if (!response.isSuccessful()) {
+	    	throw new IOException("Unexpected code " + response);
+	    }
 	    
 	    System.out.println("Server: " + response.header("Server"));
 	    System.out.println("Date: " + response.header("Date"));
@@ -138,7 +143,9 @@ public class OkHttpUtils {
 	        .build();
 	    
 	    Response response = client.newCall(request).execute();
-	    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+	    if (!response.isSuccessful()) {
+	    	throw new IOException("Unexpected code " + response);
+	    }
 	    
 	    String responseStr = response.body().string();
 	    if(responseStr!=null && responseStr.contains("\"code\":200")){
@@ -170,7 +177,9 @@ public class OkHttpUtils {
 	      private String factor(int n) {
 	        for (int i = 2; i < n; i++) {
 	          int x = n / i;
-	          if (x * i == n) return factor(x) + " × " + i;
+	          if (x * i == n) {
+	        	  return factor(x) + " × " + i;
+	          }
 	        }
 	        return Integer.toString(n);
 	      }
@@ -182,7 +191,9 @@ public class OkHttpUtils {
 	        .build();
 	    
 	    Response response = client.newCall(request).execute();
-	    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+	    if (!response.isSuccessful()) {
+	    	throw new IOException("Unexpected code " + response);
+	    }
 
 	    System.out.println(response.body().string());
 	}
@@ -200,7 +211,9 @@ public class OkHttpUtils {
 	        .build();
 	    
 	    Response response = client.newCall(request).execute();
-	    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+	    if (!response.isSuccessful()) {
+	    	throw new IOException("Unexpected code " + response);
+	    }
 	    
 	    System.out.println(response.body().string());
 	  }
