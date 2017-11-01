@@ -95,8 +95,8 @@ public class TcpServer {
 			/**
 			 * 该方法拥有关闭服务 
 			 **/
-			future.channel().closeFuture().sync();
-			//future.channel().closeFuture().addListener(remover).sync(); //用这种监听来
+			//future.channel().closeFuture().sync();
+			future.channel().closeFuture().addListener(remover).sync(); //用这种监听来
 		} catch(Exception e) {
 			System.err.println("TCP服务启动出现异常------"+e.getMessage());
 		} finally {
