@@ -20,7 +20,7 @@ public class NettyClient {
 	
 	private String host;//服务器IP
 	
-	public NettyClient(int port, String host){
+	public NettyClient(String host, int port){
 		this.port = port;
 		this.host = host;
 	}
@@ -55,7 +55,7 @@ public class NettyClient {
 	}
 	
 	public static void main(String[] args) throws InterruptedException {
-		NettyClient client = new NettyClient(9999, "localhost");
+		NettyClient client = new NettyClient("localhost", 9999);
 		client.start();
 	}
 }

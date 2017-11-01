@@ -1,7 +1,8 @@
 package com.feicent.zhang.plugin.netty.server;
+
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -14,11 +15,12 @@ import org.slf4j.LoggerFactory;
  * @author yzuzhang
  * @date 2017年10月29日 下午4:50:36
  */
-@SuppressWarnings("deprecation")
-public class TcpServerHandler extends ChannelInboundHandlerAdapter{
-	private static final Logger log = LoggerFactory.getLogger(TcpServerHandler.class);
-	public void channelRead0(ChannelHandlerContext ctx, Object msg)throws Exception {
-		log.info("接收到Client消息:" + msg.toString());
+public class TcpServerHandler extends ChannelHandlerAdapter{
+	protected static final Logger log = LoggerFactory.getLogger(TcpServerHandler.class);
+	
+	@Override
+	public void channelRead(ChannelHandlerContext ctx, Object msg)throws Exception {
+		System.out.println("接收到Client消息--->" + msg.toString());
 		Channel incoming = ctx.channel();
 		//业务处理
 		ctx.channel().write(msg.toString());
@@ -29,12 +31,12 @@ public class TcpServerHandler extends ChannelInboundHandlerAdapter{
 	 * channel被激活时调用(Client连接时调用)
 	 */
 	public void channelActive(ChannelHandlerContext ctx) {
-		log.info(ctx.channel().remoteAddress() + "   ----已激活");
+		System.out.println("客户端["+ ctx.channel().remoteAddress() +"]成功建立连接...");
 		try {
-			ctx.channel().writeAndFlush("连接成功...");
-			log.info("-------------连接成功...");
+			ctx.channel().writeAndFlush("恭喜你,连接成功...");
+			System.out.println("客户端连接成功...");
 		} catch (Exception e) {
-			log.error(ctx.channel().remoteAddress() + "   ----连接失败");
+			System.err.println(ctx.channel().remoteAddress() + "连接失败");
 		}
 	}
 
@@ -65,7 +67,7 @@ public class TcpServerHandler extends ChannelInboundHandlerAdapter{
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)throws Exception {
 		if(ctx.channel().isOpen() && ctx.channel().isActive() ){
-			log.info("-------------失去连接关闭");
+			System.out.println("客户端["+ ctx.channel().remoteAddress()+"]连接已关闭>>>>");
 			ctx.close();
 		}
 	}

@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.feicent.zhang.plugin.netty.NettyConstants;
+
 /**
  * Netty客户端
  * @author yzuzhang
@@ -27,20 +29,30 @@ import org.springframework.stereotype.Component;
 @Component
 public class TcpClient {
 	private static final Logger log = LoggerFactory.getLogger(TcpClient.class);
+	
+	private String userName;
+
 	public static String HOST = "127.0.0.1";
-	public static int PORT = 9999;
-	public static EventLoopGroup group = null;
-	public static Bootstrap bootstrap = getBootstrap();
-	public static Channel channel = getChannel(HOST,PORT);
+	public static int PORT = NettyConstants.PORT;
+	private Channel channel;
+	private EventLoopGroup group = null;
+	private Bootstrap bootstrap = getBootstrap();
+	
+	public TcpClient (String userName) {
+		super();
+		this.userName = userName;
+		this.channel = getChannel(HOST, PORT);
+	}
 	
 	/**
 	 * 初始化Bootstrap
 	 * @return
 	 */
-	public static final Bootstrap getBootstrap(){
+	public final Bootstrap getBootstrap(){
 	    group = new NioEventLoopGroup();
 		Bootstrap b = new Bootstrap();
 		b.group(group).channel(NioSocketChannel.class);
+		
 		b.handler(new ChannelInitializer<Channel>() {
 			@Override
 			protected void initChannel(Channel ch) throws Exception {
@@ -50,45 +62,46 @@ public class TcpClient {
 				pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
 				pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
 				pipeline.addLast("idleStateHandler", new IdleStateHandler(20, 20, 10)); //心跳监测 读超时为10s，写超时为10s 全部空闲时间100s
-				pipeline.addLast("handler", new TcpClientHandler());
+				pipeline.addLast("handler", new TcpClientHandler(userName));
 			}
 		});
 		b.option(ChannelOption.SO_KEEPALIVE, true);
 		return b;
 	}
 
-	public static final Channel getChannel(String host,int port){
+	public final Channel getChannel(String host,int port){
 		Channel channel = null;
 		try {
 			channel = bootstrap.connect(host, port).sync().channel();
 		} catch (Exception e) {
-			log.info(String.format("连接Server(IP[%s],PORT[%s])失败", host,port));
-		    e.printStackTrace();
+			log.info(String.format("连接Server(IP[%s], PORT[%s])失败", host, port));
 			return null;
 		}
 		return channel;
 	}
 
-	public static void sendMsg(String msg) throws Exception {
+	public void sendMsg(String msg) throws Exception {
 		if(channel==null && !channel.isActive()){
-			log.info("重新连接....");
+			System.out.println("重新连接....");
 			channel = getChannel(HOST,PORT);
 		}
 		channel.writeAndFlush(msg).sync();
 	}
+	
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 
     public static void main(String[] args) throws Exception {
-		try {
-		    //循环
-			for(int i=0;i<1;i++){
-				TcpClient.sendMsg("{\"from\": \"0001\",\"to\": \""+i+1+"\", \"msg\": \"" + i+1 + "\"}");
-			}
-		    //channel.closeFuture();
-		} catch (Exception e) {
-			log.error("推送消息出现异常"+e.getMessage());
-		}finally{
-		    //group.shutdownGracefully(); 
-			log.info("操作完成");
-		}
+    	TcpClient client = new TcpClient("张三");
+		new MyThread(client).start();
+		
+		TcpClient client2 = new TcpClient("李四");
+		new MyThread(client2).start();
     }
+    
 }

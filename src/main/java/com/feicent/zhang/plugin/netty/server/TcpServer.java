@@ -1,8 +1,10 @@
 package com.feicent.zhang.plugin.netty.server;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,7 +19,7 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.feicent.zhang.project.webside.SpringContextUtil;
+import com.feicent.zhang.plugin.netty.NettyConstants;
 
 /**
  * 采用NETTY方式
@@ -26,21 +28,49 @@ import com.feicent.zhang.project.webside.SpringContextUtil;
  * @date 2017年10月29日 下午4:50:36
  */
 public class TcpServer {
-	private static final Logger log = LoggerFactory.getLogger(TcpServer.class);
-	private static String IP;
-	private static int PORT;
-	/**用于分配处理业务线程的线程组个数 */
-	protected static final int BIZGROUPSIZE = Runtime.getRuntime().availableProcessors()*2;	//默认 Cpu*2
+	public static final Logger log = LoggerFactory.getLogger(TcpServer.class);
+	private String IP = NettyConstants.HOST;
+	private int PORT = NettyConstants.PORT;
+	
 	/** 业务出现线程大小*/
 	protected static final int BIZTHREADSIZE = 8;
-	private static final EventLoopGroup bossGroup = new NioEventLoopGroup(BIZGROUPSIZE);
-	private static final EventLoopGroup workerGroup = new NioEventLoopGroup(BIZTHREADSIZE);
-	protected void init() throws Exception {
-		ServerBootstrap b = new ServerBootstrap();
-		b.group(bossGroup, workerGroup);
+	/**用于分配处理业务线程的线程组个数 */
+	protected static final int BIZGROUPSIZE = Runtime.getRuntime().availableProcessors()*2;	//默认 Cpu*2
+	
+	private final EventLoopGroup bossGroup = new NioEventLoopGroup(BIZGROUPSIZE);
+	private final EventLoopGroup workerGroup = new NioEventLoopGroup(BIZTHREADSIZE);
+	
+	public TcpServer() {
+		super();
+	}
+	
+	public static void main(String[] args) {
+		TcpServer server = new TcpServer();
+		server.startServer();
+	}
+	
+	/**
+	 * 启动服务
+	 */
+	public void startServer(){
 		try {
-			b.channel(NioServerSocketChannel.class);
-			b.childHandler(new ChannelInitializer<SocketChannel>() {
+			System.out.println("开始启动TCP服务端...");
+			init();
+		} catch (Exception e) {
+			System.err.println("开始启动TCP服务出现异常..."+e.getMessage());
+		}
+	}
+	
+	protected void init() throws Exception {
+		ServerBootstrap bootstrap = new ServerBootstrap();
+		bootstrap.group(bossGroup, workerGroup);
+		try {
+			bootstrap.channel(NioServerSocketChannel.class);
+			bootstrap.option(ChannelOption.SO_BACKLOG, 1024); //连接数
+			bootstrap.option(ChannelOption.TCP_NODELAY, true);//不延迟，消息立即发送
+			bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true); //长连接
+			
+			bootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				public void initChannel(SocketChannel ch) throws Exception {
 					ChannelPipeline pipeline = ch.pipeline();
@@ -49,53 +79,45 @@ public class TcpServer {
 					pipeline.addLast("decoder", new StringDecoder(CharsetUtil.UTF_8));
 					pipeline.addLast("encoder", new StringEncoder(CharsetUtil.UTF_8));
 					pipeline.addLast("idleStateHandler", new IdleStateHandler(20, 20, 10)); //心跳监测 读超时为20s，写超时为20s 全部空闲时间10s
-					/**
-					 * 该方法也可以使用如下替换
-					 *pipeline.addLast(new TcpServerHandler());
-					 */
-					pipeline.addLast(getTcpServerHandler());
+					
+					pipeline.addLast(new TcpServerHandler());
 				}
 			});
+			
 			//绑定端口，开始接收进来的连接
-			ChannelFuture future = b.bind(IP, PORT).sync();
+			ChannelFuture future = bootstrap.bind(IP, PORT).sync();
 			if(future.isSuccess()){
-				log.info("TCP服务已启动---------"+future.isSuccess());
+				System.out.println("TCP服务已启动---------"+future.isSuccess());
 			}else{
-				log.info("TCP服务未能正常启动------"+future.isSuccess());
+				System.err.println("TCP服务未能正常启动------"+future.isSuccess());
 			}
+			
 			/**
 			 * 该方法拥有关闭服务 
 			 **/
-			 future.channel().closeFuture().addListener(remover); //用这种监听来
-		}catch(Exception e){
-			log.info("TCP服务启动出现异常------"+e.getMessage());
+			future.channel().closeFuture().sync();
+			//future.channel().closeFuture().addListener(remover).sync(); //用这种监听来
+		} catch(Exception e) {
+			System.err.println("TCP服务启动出现异常------"+e.getMessage());
+		} finally {
+			shutdown();
 		}
 	}
 	
 	/**
 	 * 关闭服务
 	 */
-	protected static void shutdown() {
+	protected void shutdown() {
 		workerGroup.shutdownGracefully();
 		bossGroup.shutdownGracefully();
-		log.info("关闭TCP服务");
+		System.out.println(">>>>>关闭TCP服务>>>>>");
 	}
-	/**
-	 * 启动服务
-	 */
-	public void startServer(){
-		try {
-			log.info("开始启动TCP服务...");
-			init();
-		} catch (Exception e) {
-			log.error("开始启动TCP服务出现异常..."+e.getMessage());
-		}
+	
+	public String getIP() {
+		return this.IP;
 	}
-	public static String getIP() {
-		return IP;
-	}
-	public static int getPORT() {
-		return PORT;
+	public int getPORT() {
+		return this.PORT;
 	}
 	public void setIP(String ip) {
 		IP = ip;
@@ -109,16 +131,17 @@ public class TcpServer {
 	 * @return
 	 */
 	public TcpServerHandler getTcpServerHandler(){
-		return (TcpServerHandler)SpringContextUtil.getBean("tcpServerHandler");
+		return new TcpServerHandler();
 	}
 	
 	 /**
 	 * 监听ChannelFuture是否完成
 	 */
-	private final ChannelFutureListener remover = new ChannelFutureListener() {
+	protected final ChannelFutureListener remover = new ChannelFutureListener() {
+		@Override
         public void operationComplete(ChannelFuture future) throws Exception {
         	future.channel().closeFuture().sync();
-//        	shutdown();
+        	//shutdown();
         }
     };
 }
