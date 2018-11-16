@@ -88,7 +88,26 @@ public class MyUtil {
 	public static String getResourcePath() {
 		return MyUtil.class.getClass().getResource("/").getPath();
 	}
-	
+
+	public static String[] buildShell(String command) {
+		if (isEmpty(command)) {
+			throw new NullPointerException();
+		}
+
+		String[] cmdarray;
+		String os = System.getProperty("os.name");
+
+		if ("Windows 95".equals(os) || "Windows 98".equals(os) || "Windows ME".equals(os)){
+			cmdarray = new String[]{"command.exe", "/C", command};
+		} else if (os.startsWith("Windows")){
+			cmdarray = new String[]{"cmd.exe", "/C", command};
+		} else {
+			cmdarray = new String[]{"/bin/sh", "-c", command};
+		}
+		
+		return cmdarray;
+	}
+
 	public static String getLocalServerIp() {
 		InetAddress address = null;
 		String serverIp = "127.0.0.1";
@@ -100,5 +119,15 @@ public class MyUtil {
 		}
 		return serverIp;
 	}
-    
+
+	public static String getLocalHostQuietly() {
+	    String localAddress;
+	    try {
+	      localAddress = InetAddress.getLocalHost().getHostAddress();
+	    } catch (Exception ex) {
+	      localAddress = "localhost";
+	    }
+	    return localAddress;
+	}
+
 }

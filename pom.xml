@@ -586,7 +586,7 @@
 	<dependency>
 	    <groupId>org.xhtmlrenderer</groupId>
 	    <artifactId>xhtmlrenderer</artifactId>
-	    <version>8.7-atlassian</version>
+	    <version>8.5-atlassian</version>
 	</dependency>
 	<!-- 数据库管理迁移工具 -->
 	<dependency>

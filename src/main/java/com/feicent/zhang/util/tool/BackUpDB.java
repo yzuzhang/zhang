@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.feicent.zhang.util.CloseUtil;
+import com.feicent.zhang.util.MyUtil;
 
 /**
  * 备份数据库
@@ -37,20 +38,22 @@ public class BackUpDB {
 		  this.userName = userName;
 	  }
 	  
-	  /**
-	   * 备份数据库
-	   * @throws Exception
-	   */
-	  public void backupDataBase() throws Exception {
-		Runtime rt = Runtime.getRuntime();
-		
-		// 调用 mysql 的 cmd:
+	  public void printInfo() {
 		System.out.println("数据库名: "+databaseName);
 		System.out.println("用户名: "+userName); 
 		System.out.println("密码: "+userPwd);
 		System.out.println("数据库备份命令: "+copyDbCmd);
 		System.out.println("存储工程备份命令: "+copyprocCmd);
 		System.out.println("数据库bin路径: "+databaseDirectory);
+	  }
+	  
+	  /**
+	   * 备份数据库
+	   * @throws Exception
+	   */
+	  public void backupDataBase() throws Exception {		
+		// 调用 mysql 的 cmd:
+		printInfo();
 		
 		String str = databaseDirectory + "/" + copyDbCmd + " --no-defaults "
 				+ "-u " + userName + " " + "-p " + userPwd + " " + copyprocCmd
@@ -58,9 +61,13 @@ public class BackUpDB {
 		
 		//str = "D:/SOFT/MySQL/MySQL Server 5.5/bin/mysqldump -uroot -p123456 -R --set-charset=utf-8 zhang";
 		System.out.println(str);
-		
+
+		String[] command = MyUtil.buildShell(str);
+		ProcessBuilder builder = new ProcessBuilder(command);
+		builder.redirectErrorStream(true);
+
 		// 设置导出编码为utf8。这里必须是utf8
-		Process child = rt.exec(str);// 设置导出编码为utf8。这里必须是utf8
+		Process child = builder.start();// 设置导出编码为utf8。这里必须是utf8
 		
 		// 把进程执行中的控制台输出信息写入.sql文件，即生成了备份文件。注：如果不对控制台信息进行读出，则会导致进程堵塞无法运行
 		InputStream in = child.getInputStream();// 控制台的输出信息作为输入流
