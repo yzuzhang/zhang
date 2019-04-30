@@ -2,7 +2,7 @@ package com.feicent.zhang.core.pattern.observer;
 
 import java.util.Observable;
 
-public class Watcher implements java.util.Observer{
+public class Watcher implements java.util.Observer {
     
     public Watcher(Observable o){
         o.addObserver(this);

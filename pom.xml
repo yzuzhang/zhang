@@ -404,13 +404,7 @@
 		<artifactId>gson</artifactId>
 		<version>${gson-version}</version>
 	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/com.google.zxing/core -->
-	<dependency>
-	    <groupId>com.google.zxing</groupId>
-	    <artifactId>core</artifactId>
-	    <version>3.2.0</version>
-	</dependency>
+
 	<dependency>
 	    <groupId>com.0opslab</groupId>
 	    <artifactId>0opslab-utils</artifactId>
@@ -622,12 +616,12 @@
 	<dependency>
 		<groupId>com.google.zxing</groupId>
 		<artifactId>core</artifactId>
-		<version>2.2</version>
+		<version>3.3.0</version>
 	</dependency>
 	<dependency>
 		<groupId>com.google.zxing</groupId>
 		<artifactId>javase</artifactId>
-		<version>2.2</version>
+		<version>3.3.0</version>
 	</dependency>
 	<!-- commons-email -->
 	<dependency>
